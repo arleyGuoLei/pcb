@@ -7,3 +7,8 @@
 
 项目在线地址：[https://www.i7xy.cn/code/PCB](https://www.i7xy.cn/code/PCB)
 
+已经加入绘图哦
+
+程序运行截图:
+
+![运行](https://i.loli.net/2018/11/02/5bdc6628d55da.png)
