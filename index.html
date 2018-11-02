@@ -20,6 +20,12 @@
 
           <el-input type="textarea" :rows="6" placeholder="请输入内容" v-model="processText">
           </el-input>
+          <div class="radio-type">
+            <el-radio v-model="radioType" label="1" border>先来先服务</el-radio>
+            <el-radio v-model="radioType" label="2" border>抢占式短作业优先</el-radio>
+            <el-radio v-model="radioType" label="3" border>时间片轮转</el-radio>
+          </div>
+
           <el-button class="btn" @click="submit" type="primary">运行</el-button>
 
           <div class="wrap">
@@ -31,11 +37,6 @@
             </canvas>
           </div>
 
-          <div class="radio-type">
-            <el-radio v-model="radioType" label="1" border>先来先服务</el-radio>
-            <el-radio v-model="radioType" label="2" border>抢占式短作业优先</el-radio>
-            <el-radio v-model="radioType" label="3" border>时间片轮转</el-radio>
-          </div>
 
           <el-table :data="tableData" border style="width: 100%" height="500">
 
@@ -94,11 +95,11 @@
     new Vue({
       el: '#app',
       data: {
-        processText: 'A 0 3\nB 2 6\nC 4 4\nD 6 5\nE 8 2',
+        processText: 'A 0 3\nB 2 6\nC 4 4\nD 6 5\nE 8 2\nF 10 3\nG 12 2',
         allProcess: [], // 所有进程
         allTime: 0, //总服务时间
         tableData: [],
-        radioType: '1'
+        radioType: '3'
       },
       methods: {
 
