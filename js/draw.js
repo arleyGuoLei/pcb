@@ -102,7 +102,7 @@ var drawAxis = function (allProcess, allTime) {
 var drawData = function (tableData, allProcess, w, h) {
   let canvasContent = document.getElementById("canvasContent");
   canvasContent.height = canvasContent.height;
-
+  canvasHeight = canvasContent.height - endY;
   const ctx = canvasContent.getContext("2d");
   ctx.lineWidth = "8";
 
@@ -121,11 +121,18 @@ var drawData = function (tableData, allProcess, w, h) {
       // id 为 竖轴字母
       // console.log(id);
 
-      let Y = ((allProcess.length - id) * h) - endY - 2;
+      // let Y = ((allProcess.length - id) * h) - endY - 2;
+
+      let n = parseInt(id) + 1;
+      let Y = canvasHeight - (h * n);
+
       ctx.beginPath();
 
-      ctx.moveTo(((i - 1) * w) + startX + 48, Y);
-      ctx.lineTo((i * w) + startX + 48, Y);
+      // ctx.moveTo(((i - 1) * w) + startX + 48, Y);
+      // ctx.lineTo((i * w) + startX + 48, Y);
+      ctx.moveTo(i * w + startX, Y);
+      ctx.lineTo((i + 1) * w + startX, Y);
+
       ctx.strokeStyle = colorArr[id];
 
       ctx.stroke();
