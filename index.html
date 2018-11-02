@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>操作系统进程调度算法 - 综合实验</title>
+</head>
+
+<body>
+  <div class="main-container">
+    <el-container>
+      <el-header>
+        <h2>进程调度算法 (进程名 到达时间 服务时间)</h2>
+      </el-header>
+      <el-main>
+        <div id="app">
+          <el-input type="textarea" :rows="6" placeholder="请输入内容" v-model="processText">
+          </el-input>
+          <el-button class="btn" @click="submit" type="primary">运行</el-button>
+
+          <div class="radio-type">
+            <el-radio v-model="radioType" label="1" border>先来先服务</el-radio>
+            <el-radio v-model="radioType" label="2" border>抢占式短作业优先</el-radio>
+            <el-radio v-model="radioType" label="3" border>时间片轮转</el-radio>
+          </div>
+
+          <el-table :data="tableData" border style="width: 100%" height="500">
+
+            <el-table-column prop="time" label="时钟" width="87">
+            </el-table-column>
+            <el-table-column prop="name" label="进程名" width="80">
+            </el-table-column>
+            <el-table-column prop="arriveTime" label="到达时间" width="120">
+            </el-table-column>
+            <el-table-column prop="serviceTime" label="服务时间" width="120">
+            </el-table-column>
+            <el-table-column prop="cpuTime" label="已服务" width="120">
+            </el-table-column>
+            <el-table-column prop="allTime" label="剩余服务" width="120">
+            </el-table-column>
+
+            <el-table-column class="tag" align="center" label="状态描述" width="120">
+              <template slot-scope="scope">
+                <el-tag :type="getTagType(scope.row.State)" v-text="scope.row.State"></el-tag>
+              </template>
+            </el-table-column>
+
+          </el-table>
+
+        </div>
+      </el-main>
+      <el-footer>
+        <p class="foot-desc">CopyRight © 计科B163 郭磊 (201607014334)</p>
+      </el-footer>
+    </el-container>
+  </div>
+
+
+  <!-- import Vue before Element -->
+  <script src="./js/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="./js/index.js"></script>
+
+  <script>
+
+    var process = {
+      name: '', //进程标识名
+      arriveTime: 0, // 到达时间
+      serviceTime: 0, // 服务时间
+      cpuTime: 0, // 进程已占用CPU时间
+      allTime: 0, // 还需占用的CPU时间，当进程运行完毕时，ALLTIME变为0
+      blockTime: 0, // 进程被阻塞的时间
+      State: '' // 进程状态
+    };
+    // startBlock: 0, // 进程的阻塞时间，运行STARTBLOCK个时间片后，进程将进入阻塞状态
+    // State: '就绪' // 进程状态
+
+
+    new Vue({
+      el: '#app',
+      data: {
+        processText: 'A 0 3\nB 2 6\nC 4 4\nD 6 5\nE 8 2',
+        allProcess: [], // 所有进程
+        allTime: 0, //总服务时间
+        tableData: [],
+        radioType: '1'
+      },
+      methods: {
+
+        getTagType(state) {
+          type = '';
+          switch (state) {
+            case '到达':
+              type = 'success'
+              break;
+            case '服务':
+              type = 'warning'
+              break;
+            case '结束':
+              type = 'danger'
+              break;
+          }
+          return type;
+          // return (state === '到达') ? 'success' : 'danger';
+        },
+
+        // 获取所有进程，文本框内的文本转对象。
+        getAllProcess() {
+          // 换行符分割换行，也就是进程，一个成员(一行)为一个进程的信息。
+          const processLine = this.processText.split("\n");
+
+          // 局部所有进程变量
+          var m_allProcess = [];
+          let allTime = 0; // 所有进程加起来需要服务的时间
+
+          processLine.forEach(item => {
+            // 遍历分割进程,写入进程对象
+            // console.log(item);
+            const processItem = item.split(" ");
+            if (processItem.length = 3) {
+              // var m_process = process;  // 这是直接复制地址... 必须用拷贝
+              var m_process = Object.assign({}, process);  // ES6的对象拷贝
+
+
+              [m_process.name, m_process.arriveTime, m_process.serviceTime] = processItem; //解构赋值，等同于下
+              // m_process.name = processItem[0];
+              // m_process.arriveTime = Number(processItem[1]);
+              // m_process.serviceTime = Number(processItem[2]);
+
+              allTime += Number(m_process.serviceTime);
+
+              m_allProcess.push(m_process)
+            }
+          });
+          return [m_allProcess, allTime];
+        },
+
+        // 先来先服务
+        FCFS() {
+          this.tableData = [];
+
+          for (let i = 0; i <= this.allTime; i++) {
+
+            let did = false; // 判断本秒钟是否服务过。
+
+            for (const item of this.allProcess) {
+              // 判断是否到达
+              if (parseInt(item.arriveTime) === i) {
+                let data = {
+                  time: i,
+                  name: item.name,
+                  arriveTime: item.arriveTime,
+                  serviceTime: item.serviceTime,
+                  cpuTime: item.cpuTime,
+                  allTime: item.serviceTime, // 到达的时候 allTime = serviceTime
+                  State: '到达'
+                }
+                item.State = '到达';
+                item.allTime = item.serviceTime;
+                this.tableData.push(data);
+              }
+
+
+              if (item.State === '到达' && parseInt(item.arriveTime) !== i
+                && parseInt(item.allTime) > 0 && did === false) {
+
+                item.cpuTime = parseInt(item.cpuTime) + 1;
+                item.allTime = parseInt(item.allTime) - 1;
+
+                let state = (item.allTime === 0) ? '结束' : '服务';
+
+                let data = {
+                  time: i,
+                  name: item.name,
+                  arriveTime: item.arriveTime,
+                  serviceTime: item.serviceTime,
+                  cpuTime: item.cpuTime,
+                  allTime: item.allTime,
+                  State: state
+                }
+                this.tableData.push(data);
+                did = true;
+              }
+
+            }
+
+
+          }
+        },
+
+        // 抢占式短作业优先
+        SJF_QZ() {
+
+          this.tableData = [];
+          for (let i = 0; i <= this.allTime; i++) {
+            let did = false;
+            for (const item of this.allProcess) {
+              // 判断是否到达
+              if (parseInt(item.arriveTime) === i) {
+                let data = {
+                  time: i,
+                  name: item.name,
+                  arriveTime: item.arriveTime,
+                  serviceTime: item.serviceTime,
+                  cpuTime: item.cpuTime,
+                  allTime: item.serviceTime, // 到达的时候 allTime = serviceTime
+                  State: '到达'
+                }
+                item.State = '到达';
+                item.allTime = item.serviceTime;
+                this.tableData.push(data);
+              }
+
+              // 该服务谁...
+              // 1.到达了 2.最短
+
+              // 到达的组成一个新数组
+              let arriveArr = [];//到达了的数组
+              for (const m_item of this.allProcess) {
+                if (
+                  m_item.State === '到达' && parseInt(m_item.arriveTime) !== i
+                  && parseInt(m_item.allTime) > 0
+                ) {
+                  arriveArr.push(m_item);
+                }
+              }
+
+              // 找到最小的那个的序号
+              let min = 0;
+              let k = 0; //最小的那个的序号
+              for (let j = 0; j < arriveArr.length; j++) {
+                if (j === 1) {
+                  min = arriveArr[0].allTime;
+                  k = 0;
+                }
+
+                if (min > arriveArr[j].allTime) {
+                  min = arriveArr[j].allTime;
+                  k = j;
+                }
+              }
+
+
+
+              if (did === false && arriveArr.length > 0) {
+                arriveArr[k].cpuTime = parseInt(arriveArr[k].cpuTime) + 1;
+                arriveArr[k].allTime = parseInt(arriveArr[k].allTime) - 1;
+
+                let state = (arriveArr[k].allTime === 0) ? '结束' : '服务';
+
+                let data = {
+                  time: i,
+                  name: arriveArr[k].name,
+                  arriveTime: arriveArr[k].arriveTime,
+                  serviceTime: arriveArr[k].serviceTime,
+                  cpuTime: arriveArr[k].cpuTime,
+                  allTime: arriveArr[k].allTime,
+                  State: state
+                }
+                this.tableData.push(data);
+
+                this.allProcess.forEach(item => {
+                  if (item.name == arriveArr[k].name) {
+                    item = arriveArr[k];
+                  }
+                });
+
+
+                did = true;
+              }
+
+
+            }
+          }
+        },
+
+
+        // 时间片轮转
+        RR() {
+          this.tableData = [];
+
+          let arriveArr = [];//到达了的数组
+
+          for (let i = 0; i <= this.allTime; i++) {
+
+            for (const item of this.allProcess) {
+              // 判断是否到达
+              if (parseInt(item.arriveTime) === i) {
+                let data = {
+                  time: i,
+                  name: item.name,
+                  arriveTime: item.arriveTime,
+                  serviceTime: item.serviceTime,
+                  cpuTime: item.cpuTime,
+                  allTime: item.serviceTime, // 到达的时候 allTime = serviceTime
+                  State: '到达'
+                }
+                item.State = '到达';
+                item.allTime = item.serviceTime;
+
+                arriveArr.push(item); //到达之后在尾部push进去
+                this.tableData.push(data);
+              }
+            }
+
+            if (parseInt(arriveArr[0].arriveTime) !== i) {
+              arriveArr[0].cpuTime = parseInt(arriveArr[0].cpuTime) + 1;
+              arriveArr[0].allTime = parseInt(arriveArr[0].allTime) - 1;
+
+              let state = (arriveArr[0].allTime === 0) ? '结束' : '服务';
+
+              let data = {
+                time: i,
+                name: arriveArr[0].name,
+                arriveTime: arriveArr[0].arriveTime,
+                serviceTime: arriveArr[0].serviceTime,
+                cpuTime: arriveArr[0].cpuTime,
+                allTime: arriveArr[0].allTime,
+                State: state
+              }
+              this.tableData.push(data);
+
+
+              // 更新一下数据
+              this.allProcess.forEach(item => {
+                if (item.name == arriveArr[0].name) {
+                  item = arriveArr[0];
+                }
+              });
+
+
+
+              let head = Object.assign({}, arriveArr[0]);  // 备份一下，马上要把他删除，然后在尾巴在push进去
+
+              arriveArr.shift(); // 删除第一项
+
+              if (head.allTime > 0) {//如果没有服务完
+                arriveArr.push(head);// 再把原来的第一项放到结尾
+              }
+
+
+
+            }
+          }
+        },
+
+        submit() {
+          [this.allProcess, this.allTime] = this.getAllProcess();
+
+          if (this.radioType == '1') {
+            this.FCFS();
+          } else if (this.radioType == '2') {
+            this.SJF_QZ();
+          } else if (this.radioType == '3') {
+            this.RR();
+          }
+
+
+
+        }
+      },
+
+    })
+  </script>
+</body>
+
+
+</html>

@@ -1,0 +1,21 @@
+.main-container{
+  max-width: 768px;
+  margin: 80px auto;
+}
+
+.foot-desc{
+  text-align: center;
+  color: #909399
+}
+.btn{
+  margin: 20px auto;
+  display: block;
+}
+
+.tag{
+  text-align: center;
+}
+
+.radio-type{
+  margin: 10px auto;
+}
