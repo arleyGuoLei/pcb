@@ -10,16 +10,26 @@
 </head>
 
 <body>
-  <div class="main-container">
+  <div class="main-container" v-cloak>
     <el-container>
       <el-header>
         <h2>进程调度算法 (进程名 到达时间 服务时间)</h2>
       </el-header>
       <el-main>
         <div id="app">
+
           <el-input type="textarea" :rows="6" placeholder="请输入内容" v-model="processText">
           </el-input>
           <el-button class="btn" @click="submit" type="primary">运行</el-button>
+
+          <div class="wrap">
+            <canvas id="canvasAxis" width="1000" height="500">
+
+            </canvas>
+            <canvas id="canvasContent" width="1000" height="500">
+
+            </canvas>
+          </div>
 
           <div class="radio-type">
             <el-radio v-model="radioType" label="1" border>先来先服务</el-radio>
@@ -63,6 +73,8 @@
   <script src="./js/vue.js"></script>
   <!-- import JavaScript -->
   <script src="./js/index.js"></script>
+  <!-- 画坐标图 -->
+  <script src="./js/draw.js"></script>
 
   <script>
 
@@ -358,11 +370,14 @@
             this.RR();
           }
 
-
+          // 表格数据 , 进程 ,总服务次数
+          draw(this.tableData, this.allProcess, this.allTime);
 
         }
       },
-
+      mounted() {
+        this.submit();
+      },
     })
   </script>
 </body>
