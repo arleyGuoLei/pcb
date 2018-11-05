@@ -2,6 +2,9 @@
   max-width: 768px;
   margin: 80px auto;
 }
+[v-cloak]{
+  display: none;
+}
 
 .foot-desc{
   text-align: center;
