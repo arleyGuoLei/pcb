@@ -10,13 +10,13 @@
 </head>
 
 <body>
-  <div class="main-container" v-cloak>
+  <div class="main-container">
     <el-container>
       <el-header>
         <h2>进程调度算法 (进程名 到达时间 服务时间)</h2>
       </el-header>
       <el-main>
-        <div id="app">
+        <div id="app" v-cloak>
 
           <el-input type="textarea" :rows="6" placeholder="请输入内容" v-model="processText">
           </el-input>

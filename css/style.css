@@ -3,7 +3,7 @@
   margin: 80px auto;
 }
 [v-cloak]{
-  display: none;
+  display: none !important;
 }
 
 .foot-desc{
